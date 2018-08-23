@@ -1,8 +1,5 @@
 import six
 
-from .sorted_dict import SortedDict
-from .generic_repr import GenericRepr
-
 
 class BaseFormatter(object):
     def can_format(self, value):
@@ -13,12 +10,6 @@ class BaseFormatter(object):
 
     def get_imports(self):
         return ()
-
-    def assert_value_matches_snapshot(self, test, test_value, snapshot_value):
-        test.assert_equals(test_value, snapshot_value)
-
-    def store(self, test, value):
-        return value
 
 
 class TypeFormatter(BaseFormatter):
@@ -63,11 +54,10 @@ def format_std_type(value, indent, formatter):
 
 
 def format_dict(value, indent, formatter):
-    value = SortedDict(**value)
     items = [
         formatter.lfchar + formatter.htchar * (indent + 1) + formatter.format(key, indent) + ': ' +
         formatter.format(value[key], indent + 1)
-        for key in value
+        for key in sorted(value.keys())
     ]
     return '{%s}' % (','.join(items) + formatter.lfchar + formatter.htchar * indent)
 
@@ -92,20 +82,8 @@ class GenericFormatter(BaseFormatter):
     def can_format(self, value):
         return True
 
-    def store(self, formatter, value):
-        return GenericRepr.from_value(value)
-
     def format(self, value, indent, formatter):
-        # `value` will always be a GenericRepr object because that's what `store` returns.
         return repr(value)
-
-    def get_imports(self):
-        return [('snapshottest', 'GenericRepr')]
-
-    def assert_value_matches_snapshot(self, test, test_value, snapshot_value):
-        test_value = GenericRepr.from_value(test_value)
-        # Assert equality between the representations to provide a nice textual diff.
-        test.assert_equals(test_value.representation, snapshot_value.representation)
 
 
 def default_formatters():

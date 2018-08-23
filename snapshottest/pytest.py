@@ -2,7 +2,6 @@ from __future__ import absolute_import
 import pytest
 
 from .module import SnapshotModule, SnapshotTest
-from .diff import PrettyDiff
 from .reporting import reporting_lines, diff_report
 
 
@@ -60,11 +59,6 @@ class SnapshotSession(object):
 
         for line in reporting_lines('pytest'):
             tr.write_line(line)
-
-
-def pytest_assertrepr_compare(op, left, right):
-    if isinstance(left, PrettyDiff) and op == "==":
-        return diff_report(left, right)
 
 
 @pytest.fixture

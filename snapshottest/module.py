@@ -25,6 +25,7 @@ class SnapshotModule(object):
         self.visited_snapshots = set()
         self.new_snapshots = set()
         self.failed_snapshots = set()
+        self.formatter = Formatter(self.imports)
         self.imports['snapshottest'].add('Snapshot')
 
     def load_snapshots(self):
@@ -148,12 +149,10 @@ class SnapshotModule(object):
         # Create __init__.py in case doesn't exist
         open(os.path.join(self.snapshot_dir, '__init__.py'), 'a').close()
 
-        pretty = Formatter(self.imports)
-
         with codecs.open(self.filepath, 'w', encoding="utf-8") as snapshot_file:
             snapshots_declarations = []
             for key, value in self.snapshots.items():
-                snapshots_declarations.append('''snapshots['{}'] = {}'''.format(key, pretty(value)))
+                snapshots_declarations.append('''snapshots['{}'] = {}'''.format(key, self.formatter(value)))
 
             imports = '\n'.join([
                 'from {} import {}'.format(module, ', '.join(sorted(module_imports)))
@@ -220,13 +219,10 @@ class SnapshotTest(object):
         self.module.mark_failed(self.test_name)
 
     def store(self, data):
-        formatter = Formatter.get_formatter(data)
-        data = formatter.store(self, data)
         self.module[self.test_name] = data
 
     def assert_value_matches_snapshot(self, test_value, snapshot_value):
-        formatter = Formatter.get_formatter(test_value)
-        formatter.assert_value_matches_snapshot(self, test_value, snapshot_value)
+        self.assert_equals(test_value, snapshot_value)
 
     def assert_equals(self, value, snapshot):
         assert value == snapshot
@@ -234,16 +230,19 @@ class SnapshotTest(object):
     def assert_match(self, value, name=''):
         self.curr_snapshot = name or self.snapshot_counter
         self.visit()
+
+        data = self.module.formatter(value)
+
         if self.update:
-            self.store(value)
+            self.store(data)
         else:
             try:
                 prev_snapshot = self.module[self.test_name]
             except SnapshotNotFound:
-                self.store(value)  # first time this test has been seen
+                self.store(data)  # first time this test has been seen
             else:
                 try:
-                    self.assert_value_matches_snapshot(value, prev_snapshot)
+                    self.assert_value_matches_snapshot(data, prev_snapshot)
                 except AssertionError:
                     self.fail()
                     raise

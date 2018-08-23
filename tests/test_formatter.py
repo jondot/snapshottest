@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import pytest
 import six
+from collections import defaultdict
 
 from snapshottest.formatter import Formatter
 
@@ -22,7 +23,7 @@ from snapshottest.formatter import Formatter
     ("so many\"\"\"\n'''quotes", "'''so many\"\"\"\n\\'\\'\\'quotes'''"),
 ])
 def test_text_formatting(text_value, expected):
-    formatter = Formatter()
+    formatter = Formatter(defaultdict(set))
     formatted = formatter(text_value)
     assert formatted == expected
 
@@ -48,6 +49,6 @@ def test_text_formatting(text_value, expected):
 ])
 def test_non_ascii_text_formatting(text_value, expected_py3, expected_py2):
     expected = expected_py2 if six.PY2 else expected_py3
-    formatter = Formatter()
+    formatter = Formatter(defaultdict(set))
     formatted = formatter(text_value)
     assert formatted == expected
