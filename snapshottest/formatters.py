@@ -83,7 +83,8 @@ class GenericFormatter(BaseFormatter):
         return True
 
     def format(self, value, indent, formatter):
-        return repr(value)
+        # Remove the hex id from `repr`, if found.
+        return repr(value).replace(hex(id(value)), "0x100000000")
 
 
 def default_formatters():
