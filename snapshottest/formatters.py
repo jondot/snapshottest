@@ -24,25 +24,21 @@ class TypeFormatter(BaseFormatter):
         return self.format_func(value, indent, formatter)
 
 
-def trepr(s):
-    text = '\n'.join([repr(line).lstrip('u')[1:-1] for line in s.split('\n')])
-    quotes, dquotes = "'''", '"""'
-    if quotes in text:
-        if dquotes in text:
-            text = text.replace(quotes, "\\'\\'\\'")
-        else:
-            quotes = dquotes
-    return "%s%s%s" % (quotes, text, quotes)
-
-
 def format_none(value, indent, formatter):
     return 'None'
 
 
 def format_str(value, indent, formatter):
+    # Is a multiline string, so we use '''{}''' for the repr
     if '\n' in value:
-        # Is a multiline string, so we use '''{}''' for the repr
-        return trepr(value)
+        text = value
+        quotes, dquotes = "'''", '"""'
+        if quotes in text:
+            if dquotes in text:
+                text = text.replace(quotes, "\\'\\'\\'")
+            else:
+                quotes = dquotes
+        return "%s%s%s" % (quotes, text, quotes)
 
     # Snapshots are saved with `from __future__ import unicode_literals`,
     # so the `u'...'` repr is unnecessary, even on Python 2
