@@ -29,19 +29,9 @@ def format_none(value, indent, formatter):
 
 
 def format_str(value, indent, formatter):
-    # Is a multiline string, so we use '''{}''' for the repr
-    if '\n' in value:
-        text = value
-        quotes, dquotes = "'''", '"""'
-        if quotes in text:
-            if dquotes in text:
-                text = text.replace(quotes, "\\'\\'\\'")
-            else:
-                quotes = dquotes
-        return "%s%s%s" % (quotes, text.replace('\r\n', '\n'), quotes)
-
     # Snapshots are saved with `from __future__ import unicode_literals`,
-    # so the `u'...'` repr is unnecessary, even on Python 2
+    # so the `u'...'` repr is unnecessary, even on Python 2. Avoid multiline
+    # representation in tests because `\r\n` is normalized on Python read.
     return repr(value).lstrip('u')
 
 

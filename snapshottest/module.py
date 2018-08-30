@@ -135,6 +135,16 @@ class SnapshotModule(object):
     def snapshot_dir(self):
         return os.path.dirname(self.filepath)
 
+    def format_multiline(self, value: str) -> str:
+        text = value.replace('\\', '\\\\') # Escape existing escape characters.
+        quotes, dquotes = "'''", '"""'
+        if quotes in text:
+            if dquotes in text:
+                text = text.replace(quotes, "\\'\\'\\'")
+            else:
+                quotes = dquotes
+        return "%s%s%s" % (quotes, text, quotes)
+
     def save(self):
         if self.original_snapshot == self.snapshots:
             # If there are no changes, we do nothing
@@ -152,7 +162,7 @@ class SnapshotModule(object):
         with codecs.open(self.filepath, 'w', encoding="utf-8") as snapshot_file:
             snapshots_declarations = []
             for key, value in self.snapshots.items():
-                snapshots_declarations.append('''snapshots['{}'] = {}'''.format(key, self.formatter(value)))
+                snapshots_declarations.append("snapshots['{}'] = {}".format(key, self.format_multiline(value)))
 
             imports = '\n'.join([
                 'from {} import {}'.format(module, ', '.join(sorted(module_imports)))
