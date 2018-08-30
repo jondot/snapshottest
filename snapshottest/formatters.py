@@ -38,7 +38,7 @@ def format_str(value, indent, formatter):
                 text = text.replace(quotes, "\\'\\'\\'")
             else:
                 quotes = dquotes
-        return "%s%s%s" % (quotes, text, quotes)
+        return "%s%s%s" % (quotes, text.replace('\r\n', '\n'), quotes)
 
     # Snapshots are saved with `from __future__ import unicode_literals`,
     # so the `u'...'` repr is unnecessary, even on Python 2
