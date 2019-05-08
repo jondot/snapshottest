@@ -135,7 +135,7 @@ class SnapshotModule(object):
     def snapshot_dir(self):
         return os.path.dirname(self.filepath)
 
-    def format_multiline(self, value: str) -> str:
+    def format_multiline(self, value):
         text = value.replace('\\', '\\\\') # Escape existing escape characters.
         quotes, dquotes = "'''", '"""'
         if quotes in text:
